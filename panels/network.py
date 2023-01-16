@@ -113,6 +113,13 @@ class NetworkPanel(ScreenPanel):
             return
         for net in networks:
             self.add_network(net, False)
+
+        configured_networks = self.wifi.get_supplicant_networks()
+        for net in list(configured_networks):
+            ssid = configured_networks[net]['ssid']
+            if ssid not in list(self.networks):
+                self.add_network(ssid, False)
+
         self.update_all_networks()
         self.content.show_all()
 
@@ -159,12 +166,12 @@ class NetworkPanel(ScreenPanel):
         labels.set_valign(Gtk.Align.CENTER)
         labels.set_halign(Gtk.Align.START)
 
-        connect = self._gtk.Button("load", style="color3")
+        connect = self._gtk.Button("load", None, "color3", .66)
         connect.connect("clicked", self.connect_network, ssid)
         connect.set_hexpand(False)
         connect.set_halign(Gtk.Align.END)
 
-        delete = self._gtk.Button("delete", style="color3")
+        delete = self._gtk.Button("delete", None, "color3", .66)
         delete.connect("clicked", self.remove_wifi_network, ssid)
         delete.set_hexpand(False)
         delete.set_halign(Gtk.Align.END)
@@ -177,7 +184,10 @@ class NetworkPanel(ScreenPanel):
         network.add(labels)
 
         buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        if network_id != -1 or netinfo['connected']:
+        if connected_ssid == ssid:
+            buttons.pack_end(delete, False, False, 0)
+        elif network_id != -1 or netinfo['connected']:
+            buttons.pack_end(connect, False, False, 0)
             buttons.pack_end(delete, False, False, 0)
         else:
             buttons.pack_end(connect, False, False, 0)
